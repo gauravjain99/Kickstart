@@ -1,0 +1,12 @@
+default menu.c32
+prompt 0
+timeout 200
+ONTIMEOUT local
+menu title ##### RHEL 7 PXE KICK #####
+label 1 
+menu label ^1) RHEL 7 using pxe kickstart 
+kernel rhel7/vmlinuz
+append initrd=rhel7/initrd.img method http://192.168.172.128/rhel7 devfs=nomount ks=http://192.168.172.128/kickstart/ks.cfg 
+
+label 2
+menu label ^2) Local boot 
