@@ -1,0 +1,69 @@
+1. In /etc/xinetd.d/tftp
+
+   set disable = no   ## that means enable tftp server 
+
+
+2. In /etc/dnsmasq.conf
+
+   Add the following lines in the file :
+	
+	interface=ens33,lo ## use name of the interface of the machine on which dsnmasq service is running 
+			      instead of ens33. 
+	domain=example.com   ## can be any domain 
+
+	dhcp-range=ens33,192.168.172.40,192.168.172.60,255.255.255.0,5h 
+	     ## interface-name,starting ip for dhcp range, ending ip for dhcp range, subnet mask, lease time 
+
+	## To set gateway 
+	dhcp-option=3,192.168.172.128
+
+	## To set dns
+	dhcp-option=6,192.168.172.128,8.8.8.8
+
+	dhcp-boot=pxelinux.0,pxeserver,192.168.172.128
+	## After getting ip from dhcp, pxelinux.0 file will be loaded
+
+	pxe-prompt="Press F8 for menu",60
+	## Prompt will be available for 60 seconds
+
+	pxe-service=x86PC, "Boot Rhel7 using PXE and kickstart",pxelinux
+	## 
+
+	# Enable dnsmasq's built-in TFTP server
+	enable-tftp
+
+	# Set the root directory for files available via FTP.
+	tftp-root=/var/lib/tftpboot
+
+
+3. Now copy all the contents of /usr/share/syslinux/ to /var/lib/tftpboot
+	cp -rvf /usr/share/syslinux/* /var/lib/tftpboot
+
+4. Create two folders in /var/lib/tftpboot
+
+	mkdir /var/lib/tftpboot/pxelinux.cfg
+	mkdir /var/lib/tftpboot/rhel7
+
+5.  Create a file /var/lib/tftpboot/pxelinux.cfg/default
+
+	Edit in default file :
+		default menu.c32
+		prompt 0
+		timeout 200
+		ONTIMEOUT local
+		menu title ##### RHEL 7 PXE KICK #####
+		label 1 
+		menu label ^1) RHEL 7 using pxe kickstart 
+		kernel rhel7/vmlinuz
+		append initrd=rhel7/initrd.img method http://192.168.172.128/rhel7 devfs=nomount ks=http://19				    2.168.172.128/kickstart/ks.cfg 
+
+		label 2
+		menu label ^2) Local boot 
+
+6. Copy all the contents of RHEL7 ISO image to /var/www/html/rhel7 folder 
+
+   Also copy /var/www/html/images/vmlinux   /var/lib/tftpboot/rhel7
+   and  cp /var/www/html/images/initrd.img /var/lib/tftpboot/rhel7
+
+
+
